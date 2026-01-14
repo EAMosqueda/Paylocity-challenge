@@ -69,3 +69,54 @@ Value is stored as 0.
 
 ### Impact
 Silent data corruption and incorrect benefit calculations.
+
+---
+
+## API-04: API Allows Creation of Duplicate Employees
+
+**Type:** Validation / Data Integrity  
+**Severity:** High  
+**Priority:** High
+
+### Description
+The API accepts multiple POST /Employees requests containing identical employee data, resulting in duplicate employee records. There is no backend validation to prevent duplicates.
+
+### Steps to Reproduce
+1. Send a POST /Employees request with valid employee data.
+2. Send the same POST request again with identical data.
+3. Call GET /Employees.
+4. Observe that both records appear in the response.
+
+### Expected Result
+The API should reject duplicate employee creation with a validation error (e.g., 400 Bad Request or 409 Conflict).
+
+### Actual Result
+The API creates multiple identical employee entries without any validation feedback.
+
+### Impact
+Severe data integrity issues, incorrect payroll calculations, and potential financial inconsistencies.
+
+---
+
+## API-05: API Does Not Prevent Multiple Rapid Submissions (No Idempotency / Race Condition)
+
+**Type:** Functional / Data Integrity  
+**Severity:** High  
+**Priority:** High
+
+### Description
+When multiple identical POST /Employees requests are sent in rapid succession (e.g., due to repeated UI clicks), the API processes all of them independently, creating duplicate employee records. The API does not implement idempotency or request throttling.
+
+### Steps to Reproduce
+1. Send multiple identical POST /Employees requests quickly (e.g., 2–5 requests within milliseconds).
+2. Call GET /Employees.
+3. - Observe that multiple duplicate employees were created.
+
+### Expected Result
+The API should prevent duplicate submissions by enforcing idempotency, rejecting repeated requests, or temporarily locking the resource.
+
+### Actual Result
+All requests are processed, resulting in multiple duplicate employee entries.
+
+### Impact
+Critical data duplication, inconsistent payroll calculations, and potential financial errors.
